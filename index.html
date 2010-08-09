@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta name="robots" content="follow"> 
+	<meta name="copyright" content="Andrey Okonetchnikov (andrej.okonetschnikow@gmail.com)"> 
+	<meta name="language" content="en">
+	
+  <title>Colorist: Create color palettes from images.</title>
+	
+  <link href=' http://fonts.googleapis.com/css?family=Droid+Serif:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
+	<link rel="stylesheet" href="styles.css" type="text/css" media="screen" title="no title" charset="utf-8">
+</head>
+<body>
+  
+  <h1>Colorist</h1>
+  
+  <section id="drop">
+    <h2>Drop you image here...</h2>
+  </section>
+  
+  <footer>
+    <p class="copyright">&copy; <a href="http://okonet.ru/">Andrey Okonetchnikov</a>, 2010</p>
+  </footer>
+  
+  <script type="text/javascript" charset="utf-8">
+    function createArray(nodeList) {
+      var array = [];
+      // iterate backwards ensuring that length is an UInt32
+      for (var i = nodeList.length >>> 0; i--;) { 
+        array[i] = nodeList[i];
+      }
+      return array;
+    }
+    
+    function cancel(e) {
+      if (e.preventDefault) {
+        e.preventDefault();
+      }
+      return false;
+    }
+
+    var targetEl = document.querySelector('#drop');
+    
+    // Tells the browser that we *can* drop on this target
+    targetEl.addEventListener('dragover', cancel, false);
+    targetEl.addEventListener('dragenter', cancel, false);
+    targetEl.addEventListener('drop', function (e) {
+      e.preventDefault();
+      var files = e.dataTransfer.files;
+      
+      files = createArray(files);
+      files.forEach(function(file){
+        var image = new Image();
+        image.onload = function(){
+
+          var canvas = document.createElement('canvas');
+          ctx = canvas.getContext('2d');
+          
+          canvas.width = image.width;
+          canvas.height = image.height;
+          
+          ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+          
+          targetEl.appendChild(canvas);
+        };
+        
+        var reader = new FileReader();
+        reader.onloadend = function(e) {
+          image.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+        
+      });
+      
+      return false;
+    }, false);
+
+  </script>
+  
+  <!-- <script src="http://www.google-analytics.com/urchin.js" type="text/javascript"></script>
+  <script type="text/javascript">
+  _uacct = "UA-449715-1";
+  urchinTracker();
+  </script> -->
+  
+</body>
