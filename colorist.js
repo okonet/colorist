@@ -16,6 +16,23 @@ function createArray(nativeObject) {
   return array;
 }
 
+function getMidColorFor(data) {
+  var result = [0, 0, 0],
+      total_pixels = data.length / 4;
+  
+  for (var i = 0; i <= total_pixels; i += 4) {
+    result[0] += data[i];
+    result[1] += data[i + 1];
+    result[2] += data[i + 2];
+  }
+
+  result[0] = Math.round(result[0] / total_pixels) * 4;
+  result[1] = Math.round(result[1] / total_pixels) * 4;
+  result[2] = Math.round(result[2] / total_pixels) * 4;
+
+  return result;
+}
+
 function cancel(e) {
   if (e.preventDefault) {
     e.preventDefault();
@@ -44,6 +61,29 @@ targetEl.addEventListener('drop', function (e) {
       canvas.height = image.height;
       
       ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+      
+      var rows = 2;
+      var cells = 2;
+      var cellWidth = Math.ceil(canvas.width / (cells * rows));
+      var cellHeight = Math.ceil(canvas.height / (cells * rows));
+      
+      for(var i = 0; i < rows; i++) {
+        for(var j = 0; j < cells; j++) {
+          var colorArray = ctx.getImageData(cellWidth * i, cellHeight * j, cellWidth, cellHeight);
+          var midColor = getMidColorFor(colorArray.data);
+          
+          if(typeof console.log != 'undefined'){console.log(colorArray, midColor)};
+          
+          var paletteEl = document.createElement('div');
+          paletteEl.className = 'b-palette';
+          paletteEl.style.backgroundColor = 'rgb('+midColor[0]+','+midColor[1]+','+midColor[2]+')';
+          
+          targetEl.appendChild(paletteEl);
+          
+        }
+      }
+      
+      
       
       targetEl.appendChild(canvas);
     };
