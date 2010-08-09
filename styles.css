@@ -1,0 +1,58 @@
+/*
+   styles.css
+   iphone4
+   
+   Created by Andrew Okonetchnikov on 2010-08-04.
+   Copyright 2010 okonet.ru. All rights reserved.
+*/
+body {
+  margin: 0;
+  padding: 25px 5% 0;
+  font: 1em/1.5 'Droid Serif', Georgia, Times, serif;
+  color: #444;
+  background: #fff;
+}
+
+h1 {
+  font-size: 1.25em;
+}
+
+a.js-link {
+  padding: .25em 0 .125em;
+  margin: 0 0.25em;
+  color: #36c;
+  text-decoration: none !important;
+  border-bottom: 1px dashed #36c;
+}
+a.js-link:hover {
+  border-bottom-style: solid;
+}
+a.js-link.active {
+  font-weight: bold;
+  color: #000;
+  background-color: #ffc;
+  border-bottom: none;
+}
+abbr {
+  border-bottom: none;
+}
+
+section {
+  display: block;
+  padding: 10em 2em;
+  background-color: #ffc;
+  border: 1px dashed #fc9;
+  border-radius: 12px;
+}
+
+
+/* Footer */
+footer {
+  display: block;
+  font-size: .75em;
+  color: #999;
+  background-color: #FFF;
+}
+  footer .disclaimer {
+    font-size: .85em;
+  }
