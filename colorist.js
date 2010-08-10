@@ -64,27 +64,29 @@ targetEl.addEventListener('drop', function (e) {
       
       var rows = 2;
       var cells = 2;
-      var cellWidth = Math.ceil(canvas.width / (cells * rows));
-      var cellHeight = Math.ceil(canvas.height / (cells * rows));
+      var cellWidth = Math.ceil(canvas.width / cells);
+      var cellHeight = Math.ceil(canvas.height / rows);
+      
+      // if(typeof console.log != 'undefined'){console.log(cellWidth, cellHeight)};
       
       for(var i = 0; i < rows; i++) {
         for(var j = 0; j < cells; j++) {
-          var colorArray = ctx.getImageData(cellWidth * i, cellHeight * j, cellWidth, cellHeight);
+          var colorArray = ctx.getImageData(cellWidth * j, cellHeight * i, cellWidth, cellHeight);
           var midColor = getMidColorFor(colorArray.data);
-          
-          if(typeof console.log != 'undefined'){console.log(colorArray, midColor)};
           
           var paletteEl = document.createElement('div');
           paletteEl.className = 'b-palette';
           paletteEl.style.backgroundColor = 'rgb('+midColor[0]+','+midColor[1]+','+midColor[2]+')';
-          
           targetEl.appendChild(paletteEl);
           
+          // var slice = document.createElement('canvas');
+          // slice.width = colorArray.width; 
+          // slice.height = colorArray.height;
+          // var context = slice.getContext('2d');
+          // context.putImageData(colorArray, 0,0);
+          // targetEl.appendChild(slice);
         }
       }
-      
-      
-      
       targetEl.appendChild(canvas);
     };
     
