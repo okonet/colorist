@@ -48,12 +48,28 @@ section canvas {
   max-width: 800px;
   max-height: 800px;
 }
-.b-palette { 
-  float: left;
-  margin: 5px;
-  width: 100px;
-  height: 100px;
+
+.b-palette-wrap {
+  display: block;
+  overflow: hidden;
+  zoom: 1;
+  border: 1px solid #000;
 }
+  .b-palette {
+    display: none; 
+    float: left;
+    margin: 0;
+    width: 50px;
+    height: 50px;
+    opacity: 1;
+    border: 1px solid #ffc;
+    opacity: 0.1;
+  }
+  .color-diff {
+    display: block;
+    opacity: 1;
+    border: 1px solid #f00;
+  }
 
 
 

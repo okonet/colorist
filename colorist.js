@@ -33,6 +33,71 @@ function getMidColorFor(data) {
   return result;
 }
 
+function isSimilarColors(col1, col2) {
+  var delta = 30;
+  if( 
+      ((col2[0] - col1[0]) <= delta) && 
+      ((col2[1] - col1[1]) <= delta) && 
+      ((col2[2] - col1[2]) <= delta) 
+    )
+    return true;
+  else
+    return false;
+}
+
+function sortColors(colorsArray) {
+  var res = createArray(colorsArray);
+  function sortColor(col1,col2) {
+    if (
+      (col1[0] > col2[0]) ||
+      (col1[1] > col2[1]) ||
+      (col1[2] > col2[2])
+    ) 
+      return 1;
+    
+    else if (
+      (col1[0] < col2[0]) ||
+      (col1[1] < col2[1]) ||
+      (col1[2] < col2[2])
+    ) 
+      return -1;
+    
+    else 
+      return 0;
+  }
+  return res.sort(sortColor);
+}
+
+function buildColorPalette(colorsArray) {
+  
+  var prevCol = [0,0,0],
+      uniqueColors = 0,
+      container = document.createElement('DIV');
+      
+  container.className = 'b-palette-wrap';
+  
+  for(var i = 0; i < colorsArray.length; i++) {
+    var col = colorsArray[i];
+    
+    var paletteEl = document.createElement('div');
+    paletteEl.className = 'b-palette';
+    paletteEl.style.backgroundColor = 'rgb('+col[0]+','+col[1]+','+col[2]+')';
+    container.appendChild(paletteEl);
+    
+    if(!isSimilarColors(prevCol, col)) {
+      paletteEl.className = 'b-palette color-diff';
+      prevCol = col;
+      uniqueColors++;
+    }
+  }
+  
+  return { 
+    'el': container, 
+    'unique': uniqueColors, 
+    'total': colorsArray.length
+  };
+}
+
 function cancel(e) {
   if (e.preventDefault) {
     e.preventDefault();
@@ -53,6 +118,8 @@ targetEl.addEventListener('drop', function (e) {
   files.forEach(function(file){
     var image = new Image();
     image.onload = function(){
+      
+      targetEl.innerHTML = '';
 
       var canvas = document.createElement('canvas');
       ctx = canvas.getContext('2d');
@@ -62,32 +129,31 @@ targetEl.addEventListener('drop', function (e) {
       
       ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
       
-      var rows = 2;
-      var cells = 2;
+      var rows = 10;
+      var cells = 10;
       var cellWidth = Math.ceil(canvas.width / cells);
       var cellHeight = Math.ceil(canvas.height / rows);
       
-      // if(typeof console.log != 'undefined'){console.log(cellWidth, cellHeight)};
+      
+      var uniqueColors = 0,
+          averageColors = [],
+          sortedColors = [];
       
       for(var i = 0; i < rows; i++) {
         for(var j = 0; j < cells; j++) {
           var colorArray = ctx.getImageData(cellWidth * j, cellHeight * i, cellWidth, cellHeight);
-          var midColor = getMidColorFor(colorArray.data);
-          
-          var paletteEl = document.createElement('div');
-          paletteEl.className = 'b-palette';
-          paletteEl.style.backgroundColor = 'rgb('+midColor[0]+','+midColor[1]+','+midColor[2]+')';
-          targetEl.appendChild(paletteEl);
-          
-          // var slice = document.createElement('canvas');
-          // slice.width = colorArray.width; 
-          // slice.height = colorArray.height;
-          // var context = slice.getContext('2d');
-          // context.putImageData(colorArray, 0,0);
-          // targetEl.appendChild(slice);
+          var averageColor = getMidColorFor(colorArray.data);
+          averageColors.push(averageColor);
         }
       }
+      
+      sortedColors = sortColors(averageColors);      
+      var sortPalette = buildColorPalette(sortedColors);
+      
+      targetEl.appendChild(sortPalette.el);
       targetEl.appendChild(canvas);
+      
+      if(typeof console.log != 'undefined'){console.log('Found %d visually unique colors from %d total colors.', sortPalette.unique, sortPalette.total)};
     };
     
     var reader = new FileReader();
