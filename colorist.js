@@ -16,7 +16,7 @@ function createArray(nativeObject) {
   return array;
 }
 
-function getMidColorFor(data) {
+function averageColorFor(data) {
   var result = [0, 0, 0],
       total_pixels = data.length / 4;
   
@@ -69,7 +69,6 @@ function sortColors(colorsArray) {
 }
 
 function buildColorPalette(colorsArray) {
-  
   var prevCol = [0,0,0],
       uniqueColors = 0,
       container = document.createElement('DIV');
@@ -79,13 +78,11 @@ function buildColorPalette(colorsArray) {
   for(var i = 0; i < colorsArray.length; i++) {
     var col = colorsArray[i];
     
-    var paletteEl = document.createElement('div');
-    paletteEl.className = 'b-palette';
-    paletteEl.style.backgroundColor = 'rgb('+col[0]+','+col[1]+','+col[2]+')';
-    container.appendChild(paletteEl);
-    
     if(!isSimilarColors(prevCol, col)) {
-      paletteEl.className = 'b-palette color-diff';
+      var paletteEl = document.createElement('div');
+      paletteEl.className = 'b-palette';
+      paletteEl.style.backgroundColor = 'rgb('+col[0]+','+col[1]+','+col[2]+')';
+      container.appendChild(paletteEl);
       prevCol = col;
       uniqueColors++;
     }
@@ -105,12 +102,13 @@ function cancel(e) {
   return false;
 }
 
-var targetEl = document.querySelector('#drop');
+var dropEl = document.querySelector('#drop');
+var targetEl = document.querySelector('#result');
 
 // Tells the browser that we *can* drop on this target
-targetEl.addEventListener('dragover', cancel, false);
-targetEl.addEventListener('dragenter', cancel, false);
-targetEl.addEventListener('drop', function (e) {
+dropEl.addEventListener('dragover', cancel, false);
+dropEl.addEventListener('dragenter', cancel, false);
+dropEl.addEventListener('drop', function (e) {
   e.preventDefault();
   var files = e.dataTransfer.files;
   
@@ -120,41 +118,46 @@ targetEl.addEventListener('drop', function (e) {
     image.onload = function(){
       
       targetEl.innerHTML = '';
-
+      
       var canvas = document.createElement('canvas');
       ctx = canvas.getContext('2d');
       
-      canvas.width = image.width;
-      canvas.height = image.height;
+      canvas.width = image.width / 2 >> 0;
+      canvas.height = image.height / 2 >> 0;
       
       ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
       
-      var rows = 10;
-      var cells = 10;
-      var cellWidth = Math.ceil(canvas.width / cells);
-      var cellHeight = Math.ceil(canvas.height / rows);
-      
-      
       var uniqueColors = 0,
           averageColors = [],
-          sortedColors = [];
+          sortedColors = [],
+          rows = 10,
+          cells = 10,
+          cellWidth = Math.ceil(canvas.width / cells),
+          cellHeight = Math.ceil(canvas.height / rows);
       
+      // Devide the original image into slices and get average color for each slice.
       for(var i = 0; i < rows; i++) {
         for(var j = 0; j < cells; j++) {
           var colorArray = ctx.getImageData(cellWidth * j, cellHeight * i, cellWidth, cellHeight);
-          var averageColor = getMidColorFor(colorArray.data);
+          var averageColor = averageColorFor(colorArray.data);
           averageColors.push(averageColor);
         }
       }
       
-      sortedColors = sortColors(averageColors);      
+      // Sort average colors
+      sortedColors = sortColors(averageColors);
+      
+      // Build a palette and search for unique colors
       var sortPalette = buildColorPalette(sortedColors);
       
+      // Insert into DOM
       targetEl.appendChild(sortPalette.el);
       targetEl.appendChild(canvas);
       
+      // Some stats
       if(typeof console.log != 'undefined'){console.log('Found %d visually unique colors from %d total colors.', sortPalette.unique, sortPalette.total)};
     };
+    
     
     var reader = new FileReader();
     reader.onloadend = function(e) {
