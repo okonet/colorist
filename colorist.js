@@ -6,53 +6,6 @@
 //  Copyright 2010 okonet.ru. All rights reserved.
 // 
 
-
-// Color goodies based on Mootools
-function rgbToHsb(color){
-	var red = color[0],
-			green = color[1],
-			blue = color[2],
-			hue = 0;
-	var max = Math.max(red, green, blue),
-			min = Math.min(red, green, blue);
-	var delta = max - min;
-	var brightness = max / 255,
-			saturation = (max != 0) ? delta / max : 0;
-	if(saturation != 0) {
-		var rr = (max - red) / delta;
-		var gr = (max - green) / delta;
-		var br = (max - blue) / delta;
-		if (red == max) hue = br - gr;
-		else if (green == max) hue = 2 + rr - br;
-		else hue = 4 + gr - rr;
-		hue /= 6;
-		if (hue < 0) hue++;
-	}
-	return [Math.round(hue * 360), Math.round(saturation * 100), Math.round(brightness * 100)];
-};
-
-function hsbToRgb(color){
-	var br = Math.round(color[2] / 100 * 255);
-	if (this[1] == 0){
-		return [br, br, br];
-	} else {
-		var hue = this[0] % 360;
-		var f = hue % 60;
-		var p = Math.round((color[2] * (100 - color[1])) / 10000 * 255);
-		var q = Math.round((color[2] * (6000 - color[1] * f)) / 600000 * 255);
-		var t = Math.round((color[2] * (6000 - color[1] * (60 - f))) / 600000 * 255);
-		switch (Math.floor(hue / 60)){
-			case 0: return [br, t, p];
-			case 1: return [q, br, p];
-			case 2: return [p, br, t];
-			case 3: return [p, q, br];
-			case 4: return [t, p, br];
-			case 5: return [br, p, q];
-		}
-	}
-	return false;
-}
-
 /* Creates array from native objects */
 function createArray(nativeObject) {
   var array = [];
@@ -99,33 +52,6 @@ function areSimilarColors(col1, col2) {
     return false;
 }
 
-function sortColors(colorsArray) {
-  var res = createArray(colorsArray);
-  function sortColor(col1,col2) {
-
-    col1 = rgbToHsb(col1);
-    col2 = rgbToHsb(col2);
-    
-    if (
-      (col1[0] > col2[0]) ||
-      (col1[1] > col2[1]) ||
-      (col1[2] > col2[2])
-    ) 
-      return 1;
-    
-    else if (
-      (col1[0] < col2[0]) ||
-      (col1[1] < col2[1]) ||
-      (col1[2] < col2[2])
-    ) 
-      return -1;
-    
-    else 
-      return 0;
-  }
-  return res.sort(sortColor);
-}
-
 function buildColorPalette(colorsArray) {
   var prevCol = [0,0,0],
       uniqueColors = 0,
@@ -155,19 +81,12 @@ function buildColorPalette(colorsArray) {
   };
 }
 
-function cancel(e) {
-  if (e.preventDefault) {
-    e.preventDefault();
-  }
-  return false;
-}
-
 var dropEl = document.querySelector('#drop');
 var targetEl = document.querySelector('#result');
 
 // Tells the browser that we *can* drop on this target
-dropEl.addEventListener('dragover', cancel, false);
-dropEl.addEventListener('dragenter', cancel, false);
+dropEl.addEventListener('dragover', function(e){ e.preventDefault(); }, false);
+dropEl.addEventListener('dragenter', function(e){ e.preventDefault(); }, false);
 dropEl.addEventListener('drop', function (e) {
   e.preventDefault();
   var files = e.dataTransfer.files;
@@ -189,7 +108,7 @@ dropEl.addEventListener('drop', function (e) {
       ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
       
       var averageColors = [],
-          sortedColors = [],
+          uniqueColors = [],
           rows = 40,
           cells = 40,
           cellWidth = Math.ceil(canvas.width / cells),
@@ -204,27 +123,17 @@ dropEl.addEventListener('drop', function (e) {
         }
       }
       
-      averagePalette = buildColorPalette(averageColors);
-      targetEl.appendChild(averagePalette.el);
-      
-      // Sort average colors
-      // sortedColors = sortColors(averageColors);
-      sortedColors = createArray(averageColors);
-      
-      var uniqueColors = [];
-      
       // Iterate until array is empty
-      while(sortedColors.length > 0) {
-        // Select next color and search for similar in the same array
-        var baseCol = sortedColors.shift(),
+      while(averageColors.length > 0) {
+        var baseCol = averageColors.shift(),
             avgColor = baseCol,
             k = 0;
             
         while(true) {
-          if(sortedColors.length > k) {
-            var secondCol = sortedColors[k];
+          if(averageColors.length > k) {
+            var secondCol = averageColors[k];
             if(areSimilarColors(baseCol, secondCol)) {
-              avgColor = getAverageColor(avgColor, sortedColors.splice(k,1)[0]);              
+              avgColor = getAverageColor(avgColor, averageColors.splice(k,1)[0]);              
             } else {
               k++;
             }
@@ -238,9 +147,6 @@ dropEl.addEventListener('drop', function (e) {
       // Insert into DOM
       targetEl.appendChild(buildColorPalette(uniqueColors).el);
       targetEl.appendChild(canvas);
-      
-      // Some stats
-      // if(typeof console.log != 'undefined'){console.log('Found %d visually unique colors from %d total colors.', sortPalette.unique, sortPalette.total)};
     };
     
     
@@ -249,7 +155,6 @@ dropEl.addEventListener('drop', function (e) {
       image.src = e.target.result;
     };
     reader.readAsDataURL(file);
-    
   });
   
   return false;
