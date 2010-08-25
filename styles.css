@@ -1,8 +1,8 @@
 /*
    styles.css
-   iphone4
+   Colorist app
    
-   Created by Andrew Okonetchnikov on 2010-08-04.
+   Created by Andrew Okonetchnikov on 2010-08-09.
    Copyright 2010 okonet.ru. All rights reserved.
 */
 body {
@@ -19,6 +19,21 @@ h1 {
 
 section#drop {
   display: block;
+  overflow:hidden;
+  
+  -webkit-transition-property: all;
+  -webkit-transition-duration: 0.5s;
+  -webkit-transition-timing-function: cubic-bezier(0.5, 0.2, 0.3, 1.0);
+  
+  -moz-transition-property: all;
+  -moz-transition-duration: 0.5s;
+  -moz-transition-timing-function: cubic-bezier(0.5, 0.2, 0.3, 1.0);
+  
+  -o-transition-property: all;
+  -o-transition-duration: 0.5s;
+  -o-transition-timing-function: cubic-bezier(0.5, 0.2, 0.3, 1.0);
+}
+section#drop.drag-waiting {
   padding: 150px 1em 1em 1em;
   font-size: 0.75em;
   text-align: center;
@@ -28,37 +43,27 @@ section#drop {
   -webkit-border-radius: 12px;
   -moz-border-radius: 12px;
   border-radius: 12px;
-  overflow:hidden;
 }
 section#drop.drag-hover {
   background-color:#ff9;
   cursor: copy;
 }
-section#drop.drag-result {
-  padding: 0;
-  background-color: #fff;
-  border: none;
-  height: auto;
-  border-radius: 0;
-}
-  #drop canvas {
-    float: left;
-  }
   
 .b-palette-wrap {
   display: block;
-  margin: 2em 0;
+  margin: 1em 0;
   overflow: hidden;
   zoom: 1;
 }
   .b-palette {
     float: left;
-    margin: 5px 5px 0 0;
+    margin: 0;
     text-align: center;
     text-transform: uppercase;
+    font-weight: bold;
     border: none;
-    width: 75px;
-    height: 75px;
+    width: 100px;
+    height: 100px;
     outline: none;
   }
 

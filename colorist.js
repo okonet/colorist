@@ -1,6 +1,6 @@
 // 
 //  colorist.js
-//  colorist
+//  Colorist app
 //  
 //  Created by Andrew Okonetchnikov on 2010-08-09.
 //  Copyright 2010 okonet.ru. All rights reserved.
@@ -76,6 +76,7 @@ function buildColorPalette(colorsArray) {
     el.type = 'text';
     el.className = 'b-palette';
     el.style.backgroundColor = 'rgb('+col[0]+','+col[1]+','+col[2]+')';
+    el.style.width = Math.ceil(90 / colorsArray.length) + '%'; 
     el.value = rgbToHex(col);
     el.addEventListener('click', function(e){ e.target.select(); }, false);
     container.appendChild(el);
@@ -100,7 +101,7 @@ function handleDragDropEvent(e) {
   switch(e.type) {
     case 'dragenter':
       targetEl.innerHTML = '<h2>Drop you image here...</h2>'
-      targetEl.className = ' drag-hover';
+      targetEl.className = 'drag-waiting drag-hover';
       break;
       
     case 'dragover':
@@ -111,6 +112,7 @@ function handleDragDropEvent(e) {
       break;
       
     case 'drop':
+      targetEl.className = targetEl.className.replace(' drag-hover','drag-processing');
       targetEl.innerHTML = 'Processing...';
       var files = e.dataTransfer.files;
 
@@ -122,7 +124,7 @@ function handleDragDropEvent(e) {
           // Image is loaded. Let's start working with data.
           // Prepare canvas and clear container element
           targetEl.innerHTML = '';
-          targetEl.className = targetEl.className.replace(' drag-hover','drag-result');
+          targetEl.className = '';
           
           var canvas = document.createElement('canvas');
           var ctx = canvas.getContext('2d');
@@ -136,8 +138,8 @@ function handleDragDropEvent(e) {
               uniqueColors = [],
               rows = 20,
               cells = 20,
-              cellWidth = Math.ceil(canvas.width / cells),
-              cellHeight = Math.ceil(canvas.height / rows);
+              cellWidth = (canvas.width / cells) >> 0,
+              cellHeight = (canvas.height / rows) >> 0;
 
           // Devide the original image into slices and get average color for each slice.
           for(var i = 0; i < rows; i++) {
