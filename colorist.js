@@ -63,6 +63,13 @@ function createArray(nativeObject) {
   return array;
 }
 
+function getAverageColor(col1, col2) {
+  var r = Math.round((col1[0] + col2[0]) / 2);
+  var g = Math.round((col1[1] + col2[1]) / 2);
+  var b = Math.round((col1[2] + col2[2]) / 2);
+  return [r,g,b];
+}
+
 function averageColorFor(data) {
   var result = [0, 0, 0],
       total_pixels = data.length / 4;
@@ -80,12 +87,12 @@ function averageColorFor(data) {
   return result;
 }
 
-function isSimilarColors(col1, col2) {
-  var delta = 20;
+function areSimilarColors(col1, col2) {
+  var delta = 30;
   if( 
-      ((col2[0] - col1[0]) <= delta) && 
-      ((col2[1] - col1[1]) <= delta) && 
-      ((col2[2] - col1[2]) <= delta) 
+      (Math.abs(col2[0] - col1[0]) <= delta) && 
+      (Math.abs(col2[1] - col1[1]) <= delta) && 
+      (Math.abs(col2[2] - col1[2]) <= delta) 
     )
     return true;
   else
@@ -134,7 +141,7 @@ function buildColorPalette(colorsArray) {
     paletteEl.style.backgroundColor = 'rgb('+col[0]+','+col[1]+','+col[2]+')';
     container.appendChild(paletteEl);
     
-    if(!isSimilarColors(prevCol, col)) {
+    if(!areSimilarColors(prevCol, col)) {
       
       prevCol = col;
       uniqueColors++;
@@ -181,8 +188,7 @@ dropEl.addEventListener('drop', function (e) {
       canvas.height = image.height / 2 >> 0;
       ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
       
-      var uniqueColors = 0,
-          averageColors = [],
+      var averageColors = [],
           sortedColors = [],
           rows = 40,
           cells = 40,
@@ -203,28 +209,30 @@ dropEl.addEventListener('drop', function (e) {
       
       // Sort average colors
       // sortedColors = sortColors(averageColors);
-      sortedColors = averageColors;
+      sortedColors = createArray(averageColors);
       
       var uniqueColors = [];
       
       // Iterate until array is empty
       while(sortedColors.length > 0) {
         // Select next color and search for similar in the same array
-        var baseCol = sortedColors.shift();        
-        var dups = new Array(baseCol);
-        
-        var k = 0;
-        while(sortedColors.length > k) {
-          var secondCol = sortedColors[k];
-          if(isSimilarColors(baseCol, secondCol)) {
-            var dupColor = sortedColors.splice(k,1);
-            dups.push(dupColor[0]);
+        var baseCol = sortedColors.shift(),
+            avgColor = baseCol,
+            k = 0;
+            
+        while(true) {
+          if(sortedColors.length > k) {
+            var secondCol = sortedColors[k];
+            if(areSimilarColors(baseCol, secondCol)) {
+              avgColor = getAverageColor(avgColor, sortedColors.splice(k,1)[0]);              
+            } else {
+              k++;
+            }
           } else {
-            k++;
-          } 
+            break;
+          }
         }
-        // targetEl.appendChild(buildColorPalette(dups).el);
-        uniqueColors.push(dups[0]);
+        uniqueColors.push(avgColor);
       }
       
       // Insert into DOM
