@@ -8,7 +8,7 @@
 body {
   margin: 0;
   padding: 25px 5% 0;
-  font: 1em/1.5 'Droid Serif', Georgia, Times, serif;
+  font: 1em/1.5 'Helvetica Neue',Arial,sans-serif;
   color: #444;
   background: #fff;
 }
@@ -17,59 +17,50 @@ h1 {
   font-size: 1.25em;
 }
 
-a.js-link {
-  padding: .25em 0 .125em;
-  margin: 0 0.25em;
-  color: #36c;
-  text-decoration: none !important;
-  border-bottom: 1px dashed #36c;
-}
-a.js-link:hover {
-  border-bottom-style: solid;
-}
-a.js-link.active {
-  font-weight: bold;
-  color: #000;
-  background-color: #ffc;
-  border-bottom: none;
-}
-abbr {
-  border-bottom: none;
-}
-
 section#drop {
   display: block;
-  padding: 1em;
+  padding: 150px 1em 1em 1em;
   font-size: 0.75em;
-  background-color: #ffc;
-  border: 1px dashed #fc9;
+  text-align: center;
+  background-color: #efefef;
+  height: 200px;
+  border: 2px dashed #999;
+  -webkit-border-radius: 12px;
+  -moz-border-radius: 12px;
   border-radius: 12px;
+  overflow:hidden;
 }
-section#result {
-  display: block;
-  margin-top: 2em;
-  padding: 1em;
-  overflow: hidden;
-  border: 1px solid #ccc;
-  border-radius: 12px;
+section#drop.drag-hover {
+  background-color:#ff9;
+  cursor: copy;
 }
-  #result canvas {
+section#drop.drag-result {
+  padding: 0;
+  background-color: #fff;
+  border: none;
+  height: auto;
+  border-radius: 0;
+}
+  #drop canvas {
     float: left;
   }
-  .b-palette-wrap {
-/*    float: right;*/
-    display: block;
-    margin: 2em 0;
-    overflow: hidden;
-    zoom: 1;
+  
+.b-palette-wrap {
+  display: block;
+  margin: 2em 0;
+  overflow: hidden;
+  zoom: 1;
+}
+  .b-palette {
+    float: left;
+    margin: 5px 5px 0 0;
+    text-align: center;
+    text-transform: uppercase;
+    border: none;
+    width: 75px;
+    height: 75px;
+    outline: none;
   }
-    .b-palette {
-      float: left;
-      margin: 1px 1px 0 0;
-      width: 15px;
-      height: 15px;
-      opacity: 1;
-    }
 
 /* Footer */
 footer {

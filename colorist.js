@@ -32,16 +32,17 @@ function averageColorFor(data) {
     result[1] += data[i + 1];
     result[2] += data[i + 2];
   }
-
-  result[0] = Math.round(result[0] / total_pixels) * 4;
-  result[1] = Math.round(result[1] / total_pixels) * 4;
-  result[2] = Math.round(result[2] / total_pixels) * 4;
+  
+  for (var i = 0; i < 3; i++) {
+    result[i] = Math.round(result[i] / total_pixels) * 4;
+    result[i] = (result[i] > 255) ? 255 : result[i];
+  }
 
   return result;
 }
 
 function areSimilarColors(col1, col2) {
-  var delta = 30;
+  var delta = 50;
   if( 
       (Math.abs(col2[0] - col1[0]) <= delta) && 
       (Math.abs(col2[1] - col1[1]) <= delta) && 
@@ -50,6 +51,15 @@ function areSimilarColors(col1, col2) {
     return true;
   else
     return false;
+}
+
+function rgbToHex(array){
+	var hex = [];
+	for (var i = 0; i < 3; i++){
+		var bit = (array[i] - 0).toString(16);
+		hex.push((bit.length == 1) ? '0' + bit : bit);
+	}
+	return '#' + hex.join('');
 }
 
 function buildColorPalette(colorsArray) {
@@ -62,13 +72,15 @@ function buildColorPalette(colorsArray) {
   for(var i = 0; i < colorsArray.length; i++) {
     var col = colorsArray[i];
     
-    var paletteEl = document.createElement('div');
-    paletteEl.className = 'b-palette';
-    paletteEl.style.backgroundColor = 'rgb('+col[0]+','+col[1]+','+col[2]+')';
-    container.appendChild(paletteEl);
+    var el = document.createElement('input');
+    el.type = 'text';
+    el.className = 'b-palette';
+    el.style.backgroundColor = 'rgb('+col[0]+','+col[1]+','+col[2]+')';
+    el.value = rgbToHex(col);
+    el.addEventListener('click', function(e){ e.target.select(); }, false);
+    container.appendChild(el);
     
     if(!areSimilarColors(prevCol, col)) {
-      
       prevCol = col;
       uniqueColors++;
     }
@@ -81,81 +93,92 @@ function buildColorPalette(colorsArray) {
   };
 }
 
-var dropEl = document.querySelector('#drop');
-var targetEl = document.querySelector('#result');
+function handleDragDropEvent(e) {
+  if (e.preventDefault) e.preventDefault();
+  var targetEl = document.getElementById('drop');
+    
+  switch(e.type) {
+    case 'dragenter':
+      targetEl.innerHTML = '<h2>Drop you image here...</h2>'
+      targetEl.className = ' drag-hover';
+      break;
+      
+    case 'dragover':
+      break;
+      
+    case 'dragleave':
+      targetEl.className = targetEl.className.replace(' drag-hover','');
+      break;
+      
+    case 'drop':
+      targetEl.innerHTML = 'Processing...';
+      var files = e.dataTransfer.files;
 
-// Tells the browser that we *can* drop on this target
-dropEl.addEventListener('dragover', function(e){ e.preventDefault(); }, false);
-dropEl.addEventListener('dragenter', function(e){ e.preventDefault(); }, false);
-dropEl.addEventListener('drop', function (e) {
-  e.preventDefault();
-  var files = e.dataTransfer.files;
-  
-  // We've got some files, so let's loop throught each.
-  files = createArray(files);
-  files.forEach(function(file){
-    var image = new Image();
-    image.onload = function(){
-      // Image is loaded. Let's start working with data.
-      // Prepare canvas and clear container element
-      targetEl.innerHTML = '';
-      var canvas = document.createElement('canvas');
-      ctx = canvas.getContext('2d');
-      
-      // Reduce image size to fit container. Right now it's just twice as small.
-      canvas.width = image.width / 2 >> 0;
-      canvas.height = image.height / 2 >> 0;
-      ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-      
-      var averageColors = [],
-          uniqueColors = [],
-          rows = 40,
-          cells = 40,
-          cellWidth = Math.ceil(canvas.width / cells),
-          cellHeight = Math.ceil(canvas.height / rows);
-      
-      // Devide the original image into slices and get average color for each slice.
-      for(var i = 0; i < rows; i++) {
-        for(var j = 0; j < cells; j++) {
-          var colorArray = ctx.getImageData(cellWidth * j, cellHeight * i, cellWidth, cellHeight);
-          var averageColor = averageColorFor(colorArray.data);
-          averageColors.push(averageColor);
-        }
-      }
-      
-      // Iterate until array is empty
-      while(averageColors.length > 0) {
-        var baseCol = averageColors.shift(),
-            avgColor = baseCol,
-            k = 0;
-            
-        while(true) {
-          if(averageColors.length > k) {
-            var secondCol = averageColors[k];
-            if(areSimilarColors(baseCol, secondCol)) {
-              avgColor = getAverageColor(avgColor, averageColors.splice(k,1)[0]);              
-            } else {
-              k++;
+      // We've got some files, so let's loop throught each.
+      file = files[0];
+      // files.forEach(function(file){
+        var image = new Image();
+        image.onload = function(){
+          // Image is loaded. Let's start working with data.
+          // Prepare canvas and clear container element
+          targetEl.innerHTML = '';
+          targetEl.className = targetEl.className.replace(' drag-hover','drag-result');
+          
+          var canvas = document.createElement('canvas');
+          var ctx = canvas.getContext('2d');
+
+          // Reduce image size to fit container. Right now it's just twice as small.
+          canvas.width = image.width / 2 >> 0;
+          canvas.height = image.height / 2 >> 0;
+          ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+          var averageColors = [],
+              uniqueColors = [],
+              rows = 20,
+              cells = 20,
+              cellWidth = Math.ceil(canvas.width / cells),
+              cellHeight = Math.ceil(canvas.height / rows);
+
+          // Devide the original image into slices and get average color for each slice.
+          for(var i = 0; i < rows; i++) {
+            for(var j = 0; j < cells; j++) {
+              var colorArray = ctx.getImageData(cellWidth * j, cellHeight * i, cellWidth, cellHeight);
+              var averageColor = averageColorFor(colorArray.data);
+              averageColors.push(averageColor);
             }
-          } else {
-            break;
           }
-        }
-        uniqueColors.push(avgColor);
-      }
+          // Iterate until array is empty
+          while(averageColors.length > 0) {
+            var baseCol = averageColors.shift(),
+                avgColor = baseCol,
+                k = 0;
+            while(true) {
+              if(averageColors.length > k) {
+                var secondCol = averageColors[k];
+                if(areSimilarColors(baseCol, secondCol)) {
+                  avgColor = getAverageColor(avgColor, averageColors.splice(k,1)[0]);
+                } else 
+                  k++;
+              } else break; 
+            }
+            uniqueColors.push(avgColor);
+          }
+          targetEl.appendChild(buildColorPalette(uniqueColors).el);
+          targetEl.appendChild(canvas);
+        };
+
+        var reader = new FileReader();
+        reader.onloadend = function(e) { image.src = e.target.result; };
+        reader.readAsDataURL(file);
+      // });
+      break;
       
-      // Insert into DOM
-      targetEl.appendChild(buildColorPalette(uniqueColors).el);
-      targetEl.appendChild(canvas);
-    };
-    
-    
-    var reader = new FileReader();
-    reader.onloadend = function(e) {
-      image.src = e.target.result;
-    };
-    reader.readAsDataURL(file);
-  });
+    default: return false;
+  }
   
   return false;
-}, false);
+}
+document.addEventListener('dragover',   handleDragDropEvent, false);
+document.addEventListener('dragenter',  handleDragDropEvent, false);
+document.addEventListener('dragleave',  handleDragDropEvent, false);
+document.addEventListener('drop',       handleDragDropEvent, false);
