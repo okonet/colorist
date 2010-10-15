@@ -6,15 +6,8 @@
 //  Copyright 2010 okonet.ru. All rights reserved.
 // 
 
-/* Creates array from native objects */
-function createArray(nativeObject) {
-  var array = [];
-  // iterate backwards ensuring that length is an UInt32
-  for (var i = nativeObject.length >>> 0; i--;) { 
-    array[i] = nativeObject[i];
-  }
-  return array;
-}
+/* Creates array from native objects. Thanks @thomasfuchs for this suggestion. */
+function createArray(nativeObject){ return [].slice.call(nativeObject); }
 
 function getAverageColor(col1, col2) {
   var r = Math.round((col1[0] + col2[0]) / 2);
